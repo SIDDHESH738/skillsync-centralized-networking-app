@@ -1,6 +1,8 @@
+"use client"
+
 import { Navigation } from "@/components/navigation"
 import { CreatePost } from "@/components/create-post"
-import { PostFeed } from "@/components/post-feed"
+import { PostFeedAPI } from "@/components/post-feed-api"
 import { TrendingTopics } from "@/components/trending-topics"
 import { ScrollAnimations } from "@/components/scroll-animations"
 
@@ -16,7 +18,7 @@ export default function FeedPage() {
             {/* Main Feed */}
             <div className="lg:col-span-3 space-y-6">
               <CreatePost />
-              <PostFeed />
+              <PostFeedAPI />
             </div>
 
             {/* Sidebar */}

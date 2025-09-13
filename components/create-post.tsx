@@ -7,22 +7,66 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ImageIcon, Video, FileText, Smile, Send } from "lucide-react"
+import { useUser } from '@clerk/nextjs'
 
 export function CreatePost() {
   const [content, setContent] = useState("")
   const [isExpanded, setIsExpanded] = useState(false)
   const [isPosting, setIsPosting] = useState(false)
+  const { user, isSignedIn } = useUser()
+
+  // Don't render if user is not authenticated
+  if (!isSignedIn || !user) {
+    return null
+  }
 
   const handlePost = async () => {
     if (!content.trim()) return
 
     setIsPosting(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
 
-    setContent("")
-    setIsExpanded(false)
-    setIsPosting(false)
+    try {
+      // Create new post object
+      const newPost = {
+        _id: Date.now().toString(),
+        author: {
+          _id: 'current-user',
+          name: user.fullName || user.firstName || 'User',
+          email: user.primaryEmailAddress?.emailAddress || '',
+          avatar: user.imageUrl || '/placeholder-user.jpg'
+        },
+        content: content.trim(),
+        images: [],
+        videos: [],
+        documents: [],
+        likes: [],
+        comments: [],
+        shares: [],
+        tags: content.match(/#\w+/g)?.map(tag => tag.slice(1)) || [],
+        visibility: 'public',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+
+      // Save to localStorage
+      const storedPosts = localStorage.getItem('skillsync-posts')
+      const allPosts = storedPosts ? JSON.parse(storedPosts) : []
+      allPosts.unshift(newPost) // Add to beginning
+      localStorage.setItem('skillsync-posts', JSON.stringify(allPosts))
+      
+      setContent("")
+      setIsExpanded(false)
+      setIsPosting(false)
+      
+      // Trigger a refresh of the post feed
+      window.dispatchEvent(new CustomEvent('postCreated', { detail: newPost }))
+      
+      alert('Post created successfully!')
+    } catch (error: any) {
+      setIsPosting(false)
+      console.error('Error creating post:', error)
+      alert(error.message)
+    }
   }
 
   return (
@@ -30,8 +74,10 @@ export function CreatePost() {
       <CardContent className="p-6">
         <div className="flex gap-4">
           <Avatar className="w-12 h-12">
-            <AvatarImage src="/professional-headshot.png" />
-            <AvatarFallback>AJ</AvatarFallback>
+            <AvatarImage src={user.imageUrl || "/placeholder-user.jpg"} />
+            <AvatarFallback>
+              {(user.fullName || user.firstName || 'U').split(' ').map(n => n[0]).join('').toUpperCase()}
+            </AvatarFallback>
           </Avatar>
 
           <div className="flex-1 space-y-4">

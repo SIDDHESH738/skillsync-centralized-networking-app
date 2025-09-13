@@ -6,17 +6,41 @@ import { ParticleSystem } from "@/components/particle-system"
 import { ScrollAnimations } from "@/components/scroll-animations"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useUser } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 export default function HomePage() {
+  const { isSignedIn, isLoaded } = useUser()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.push('/dashboard')
+    }
+  }, [isLoaded, isSignedIn, router])
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  if (isSignedIn) {
+    return null // Will redirect to dashboard
+  }
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <div className="absolute top-6 right-6 z-50 flex gap-3">
-        <Link href="/auth/login">
+        <Link href="/sign-in">
           <Button variant="ghost" className="text-foreground hover:bg-accent">
-            Login
+            Sign In
           </Button>
         </Link>
-        <Link href="/auth/signup">
+        <Link href="/sign-up">
           <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Sign Up</Button>
         </Link>
       </div>
@@ -44,14 +68,14 @@ export default function HomePage() {
               Join thousands of professionals already using SkillSync to accelerate their careers.
             </p>
             <div className="fade-up flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth/signup">
+              <Link href="/sign-up">
                 <button className="px-8 py-4 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-all duration-300 text-lg hover:scale-105 hover:shadow-lg hover:shadow-primary/25">
                   Get Started Free
                 </button>
               </Link>
-              <Link href="/auth/demo">
+              <Link href="/sign-in">
                 <button className="px-8 py-4 border border-border text-foreground rounded-lg font-medium hover:bg-accent transition-all duration-300 text-lg hover:scale-105">
-                  Schedule Demo
+                  Sign In
                 </button>
               </Link>
             </div>

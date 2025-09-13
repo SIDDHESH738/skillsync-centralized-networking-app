@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
+import { UserButton, useUser } from '@clerk/nextjs'
 import {
   Home,
   User,
@@ -35,6 +36,7 @@ const navigationItems = [
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const { theme, setTheme } = useTheme()
+  const { user, isSignedIn } = useUser()
 
   return (
     <>
@@ -78,8 +80,15 @@ export function Navigation() {
             ))}
           </nav>
 
-          {/* Theme Toggle */}
-          <div className="p-4 border-t border-sidebar-border">
+          {/* User Info and Actions */}
+          <div className="p-4 border-t border-sidebar-border space-y-2">
+            {isSignedIn && user && (
+              <div className="px-3 py-2 text-sm text-sidebar-foreground">
+                <p className="font-medium">{user.fullName || user.firstName}</p>
+                <p className="text-xs text-muted-foreground">{user.primaryEmailAddress?.emailAddress}</p>
+              </div>
+            )}
+            
             <Button
               variant="ghost"
               size="sm"
@@ -98,6 +107,20 @@ export function Navigation() {
                 </>
               )}
             </Button>
+
+            {isSignedIn && (
+              <div className="flex justify-center">
+                <UserButton 
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-8 h-8",
+                      userButtonPopoverCard: "bg-card border-border",
+                      userButtonPopoverActionButton: "text-foreground hover:bg-muted",
+                    }
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
       </aside>
