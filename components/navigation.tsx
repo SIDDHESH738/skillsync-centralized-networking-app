@@ -59,9 +59,22 @@ export function Navigation() {
         md:translate-x-0
       `}
       >
-        <div className="flex h-full flex-col">
+        <div className="flex h-full flex-col justify-evenly">
           {/* Logo */}
           <div className="flex h-16 items-center px-6 border-b border-sidebar-border">
+            {isSignedIn && (
+              <div className="flex justify-center">
+                <UserButton 
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-8 h-8",
+                      userButtonPopoverCard: "bg-card border-border",
+                      userButtonPopoverActionButton: "text-foreground hover:bg-muted",
+                    }
+                  }}
+                />
+              </div>
+            )}
             <h1 className="text-xl font-display font-bold text-sidebar-foreground">SkillSync</h1>
           </div>
 
@@ -108,19 +121,7 @@ export function Navigation() {
               )}
             </Button>
 
-            {isSignedIn && (
-              <div className="flex justify-center">
-                <UserButton 
-                  appearance={{
-                    elements: {
-                      avatarBox: "w-8 h-8",
-                      userButtonPopoverCard: "bg-card border-border",
-                      userButtonPopoverActionButton: "text-foreground hover:bg-muted",
-                    }
-                  }}
-                />
-              </div>
-            )}
+            
           </div>
         </div>
       </aside>

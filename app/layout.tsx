@@ -22,7 +22,7 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "SkillSync - Professional Networking & Collaboration",
   description: "Connect, collaborate, and grow your professional network with SkillSync",
-  generator: "v0.app",
+  generator: "",
 }
 
 export default function RootLayout({
