@@ -4,7 +4,9 @@ import { Inter, Poppins } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { CustomCursor } from "@/components/custom-cursor"
+import { FloatingChatButton } from "@/components/floating-chat-button"
 import { ClerkProvider } from '@clerk/nextjs'
+import { ChatProvider } from '@/contexts/ChatContext'
 import "./globals.css"
 import { Suspense } from "react"
 
@@ -36,8 +38,11 @@ export default function RootLayout({
         <body className={`${inter.variable} ${poppins.variable} font-sans antialiased cursor-none`}>
           <Suspense fallback={null}>
             <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange={false}>
-              <CustomCursor />
-              {children}
+              <ChatProvider>
+                <CustomCursor />
+                {children}
+                <FloatingChatButton />
+              </ChatProvider>
             </ThemeProvider>
           </Suspense>
           <Analytics />

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Wifi, MessageCircle, UserPlus } from "lucide-react"
+import { Navigation } from "@/components/navigation"
 
 interface NearbyUser {
   id: string
@@ -91,8 +92,10 @@ export default function ConnectNearbyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6 md:ml-64">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <main className="md:ml-64 p-6">
+        <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-4">
           <h1 className="text-4xl font-display font-bold text-foreground">Connect Nearby</h1>
@@ -193,7 +196,8 @@ export default function ConnectNearbyPage() {
             </CardContent>
           </Card>
         )}
-      </div>
+        </div>
+      </main>
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Plus, MessageCircle, Users, Calendar, Bell } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 const suggestions = [
   {
@@ -32,6 +33,29 @@ const suggestions = [
 ]
 
 export function QuickActions() {
+  const router = useRouter()
+
+  const handleCreatePost = () => {
+    router.push('/feed')
+  }
+
+  const handleSendMessage = () => {
+    router.push('/messages')
+  }
+
+  const handleFindConnections = () => {
+    router.push('/connections')
+  }
+
+  const handleScheduleMeeting = () => {
+    // This would typically open a calendar modal or redirect to a calendar page
+    alert('Calendar integration coming soon!')
+  }
+
+  const handleConnect = (name: string) => {
+    alert(`Connecting with ${name}...`)
+  }
+
   return (
     <div className="space-y-6">
       {/* Quick Actions */}
@@ -41,28 +65,28 @@ export function QuickActions() {
         </CardHeader>
         <CardContent className="space-y-3">
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Button className="w-full justify-start bg-transparent" variant="outline">
+            <Button className="w-full justify-start bg-transparent" variant="outline" onClick={handleCreatePost}>
               <Plus className="w-4 h-4 mr-2" />
               Create Post
             </Button>
           </motion.div>
 
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Button className="w-full justify-start bg-transparent" variant="outline">
+            <Button className="w-full justify-start bg-transparent" variant="outline" onClick={handleSendMessage}>
               <MessageCircle className="w-4 h-4 mr-2" />
               Send Message
             </Button>
           </motion.div>
 
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Button className="w-full justify-start bg-transparent" variant="outline">
+            <Button className="w-full justify-start bg-transparent" variant="outline" onClick={handleFindConnections}>
               <Users className="w-4 h-4 mr-2" />
               Find Connections
             </Button>
           </motion.div>
 
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Button className="w-full justify-start bg-transparent" variant="outline">
+            <Button className="w-full justify-start bg-transparent" variant="outline" onClick={handleScheduleMeeting}>
               <Calendar className="w-4 h-4 mr-2" />
               Schedule Meeting
             </Button>
@@ -105,7 +129,7 @@ export function QuickActions() {
               </div>
 
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button size="sm" variant="outline">
+                <Button size="sm" variant="outline" onClick={() => handleConnect(person.name)}>
                   Connect
                 </Button>
               </motion.div>

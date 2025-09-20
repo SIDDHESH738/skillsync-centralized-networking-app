@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { useTheme } from "next-themes"
+import { Navigation } from "@/components/navigation"
 
 const settingsCategories = [
   {
@@ -193,7 +194,9 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+      <Navigation />
+      <div className="md:ml-64 p-6">
+        <div className="max-w-6xl mx-auto">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">Settings</h1>
           <p className="text-muted-foreground">Manage your account preferences and settings</p>
@@ -267,6 +270,7 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
           </motion.div>
+        </div>
         </div>
       </div>
     </div>

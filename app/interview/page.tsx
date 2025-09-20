@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Video, VideoOff, Mic, MicOff, Camera, Users, Brain, Briefcase, Play, Square } from "lucide-react"
+import { Navigation } from "@/components/navigation"
 
 type InterviewType = "hr" | "technical" | "aptitude"
 
@@ -182,8 +183,10 @@ export default function InterviewPage() {
     const currentQ = questions[currentQuestion]
 
     return (
-      <div className="min-h-screen bg-background p-4 md:ml-64">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <main className="md:ml-64 p-6">
+          <div className="max-w-4xl mx-auto space-y-6">
           {/* Interview Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -283,14 +286,17 @@ export default function InterviewPage() {
               </CardContent>
             </Card>
           </div>
-        </div>
+          </div>
+        </main>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6 md:ml-64">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <main className="md:ml-64 p-6">
+        <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-4">
           <h1 className="text-4xl font-display font-bold text-foreground">Take My Interview</h1>
@@ -438,7 +444,8 @@ export default function InterviewPage() {
             </CardContent>
           </Card>
         )}
-      </div>
+        </div>
+      </main>
     </div>
   )
 }

@@ -5,6 +5,8 @@ import Link from "next/link"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { UserButton, useUser } from '@clerk/nextjs'
+import { Badge } from "@/components/ui/badge"
+import { useChat } from '@/contexts/ChatContext'
 import {
   Home,
   User,
@@ -26,7 +28,7 @@ const navigationItems = [
   { icon: Rss, label: "Feed", href: "/feed" },
   { icon: User, label: "Profile", href: "/profile" },
   { icon: Users, label: "Connections", href: "/connections" },
-  { icon: MessageCircle, label: "Messages", href: "/messages" },
+  { icon: MessageCircle, label: "Messages", href: "/chat" },
   { icon: MapPin, label: "Connect Nearby", href: "/connect-nearby" },
   { icon: Video, label: "Take My Interview", href: "/interview" },
   { icon: Briefcase, label: "Marketplace", href: "/marketplace" },
@@ -37,6 +39,9 @@ export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const { theme, setTheme } = useTheme()
   const { user, isSignedIn } = useUser()
+  const { conversations } = useChat()
+  
+  const totalUnreadCount = conversations.reduce((sum, conv) => sum + conv.unreadCount, 0)
 
   return (
     <>
@@ -71,11 +76,16 @@ export function Navigation() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors relative"
                 onClick={() => setIsOpen(false)}
               >
                 <item.icon className="h-5 w-5" />
                 <span className="font-medium">{item.label}</span>
+                {item.label === "Messages" && totalUnreadCount > 0 && (
+                  <Badge variant="destructive" className="ml-auto text-xs">
+                    {totalUnreadCount}
+                  </Badge>
+                )}
               </Link>
             ))}
           </nav>

@@ -1,255 +1,282 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Send, Paperclip, Smile, Phone, Video, MoreVertical } from "lucide-react"
+import { useState, useRef, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { useChat } from '@/contexts/ChatContext'
+import { useUser } from '@clerk/nextjs'
+import { 
+  Send, 
+  Paperclip, 
+  Smile, 
+  Phone, 
+  Video, 
+  MoreVertical,
+  Search,
+  ArrowLeft,
+  Online,
+  Clock
+} from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
 
-interface Message {
-  id: number
-  content: string
-  sender: "me" | "other"
-  timestamp: string
-  type: "text" | "image" | "file"
+interface ChatWindowProps {
+  isOpen: boolean
+  onClose: () => void
+  conversationId?: string
 }
 
-const mockMessages: Message[] = [
-  {
-    id: 1,
-    content: "Hey! How's the new project coming along?",
-    sender: "other",
-    timestamp: "10:30 AM",
-    type: "text",
-  },
-  {
-    id: 2,
-    content: "It's going great! Just finished the authentication system. The animations turned out really smooth.",
-    sender: "me",
-    timestamp: "10:32 AM",
-    type: "text",
-  },
-  {
-    id: 3,
-    content: "That's awesome! I'd love to see a demo when you have a chance.",
-    sender: "other",
-    timestamp: "10:33 AM",
-    type: "text",
-  },
-  {
-    id: 4,
-    content: "How about we schedule a call for tomorrow afternoon?",
-    sender: "me",
-    timestamp: "10:35 AM",
-    type: "text",
-  },
-  {
-    id: 5,
-    content: "Perfect! Looking forward to it. The design system integration sounds really interesting.",
-    sender: "other",
-    timestamp: "10:36 AM",
-    type: "text",
-  },
-]
-
-export function ChatWindow() {
-  const [messages, setMessages] = useState<Message[]>(mockMessages)
-  const [newMessage, setNewMessage] = useState("")
-  const [isTyping, setIsTyping] = useState(false)
+export function ChatWindow({ isOpen, onClose, conversationId }: ChatWindowProps) {
+  const { user } = useUser()
+  const { 
+    conversations, 
+    currentConversation, 
+    messages, 
+    sendMessage, 
+    selectConversation,
+    isConnected 
+  } = useChat()
+  
+  const [messageInput, setMessageInput] = useState('')
+  const [showConversations, setShowConversations] = useState(!conversationId)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
 
   useEffect(() => {
-    scrollToBottom()
+    if (conversationId) {
+      selectConversation(conversationId)
+      setShowConversations(false)
+    }
+  }, [conversationId, selectConversation])
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim()) return
+  const handleSendMessage = () => {
+    if (!messageInput.trim() || !currentConversation || !user) return
 
-    const message: Message = {
-      id: messages.length + 1,
-      content: newMessage,
-      sender: "me",
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      type: "text",
+    const receiverId = currentConversation.participants.find(p => p !== user.id)
+    if (receiverId) {
+      sendMessage(receiverId, messageInput.trim())
+      setMessageInput('')
     }
-
-    setMessages((prev) => [...prev, message])
-    setNewMessage("")
-
-    // Simulate typing indicator
-    setIsTyping(true)
-    setTimeout(() => {
-      setIsTyping(false)
-      const response: Message = {
-        id: messages.length + 2,
-        content: "Thanks for sharing! That looks really impressive.",
-        sender: "other",
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        type: "text",
-      }
-      setMessages((prev) => [...prev, response])
-
-      // GSAP bounce animation for new message alert
-      const loadGSAP = async () => {
-        const { gsap } = await import("gsap")
-        gsap.fromTo(
-          ".new-message",
-          { scale: 0, opacity: 0 },
-          { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" },
-        )
-      }
-      loadGSAP()
-    }, 2000)
   }
 
-  const TypingIndicator = () => (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className="flex items-center gap-2 p-3 mb-4"
-    >
-      <Avatar className="w-8 h-8">
-        <AvatarImage src="/professional-woman-diverse.png" />
-        <AvatarFallback>SC</AvatarFallback>
-      </Avatar>
-      <div className="bg-muted rounded-lg px-4 py-2">
-        <div className="flex gap-1">
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={i}
-              className="w-2 h-2 bg-muted-foreground rounded-full"
-              animate={{ opacity: [0.3, 1, 0.3] }}
-              transition={{
-                duration: 1.5,
-                repeat: Number.POSITIVE_INFINITY,
-                delay: i * 0.2,
-              }}
-            />
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  )
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSendMessage()
+    }
+  }
+
+  const getOtherParticipant = () => {
+    if (!currentConversation || !user) return null
+    return currentConversation.participants.find(p => p !== user.id)
+  }
+
+  const formatMessageTime = (timestamp: string) => {
+    return formatDistanceToNow(new Date(timestamp), { addSuffix: true })
+  }
+
+  if (!isOpen) return null
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Chat Header */}
-      <div className="p-4 border-b border-border bg-card">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Avatar className="w-10 h-10">
-                <AvatarImage src="/professional-woman-diverse.png" />
-                <AvatarFallback>SC</AvatarFallback>
-              </Avatar>
-              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-background rounded-full" />
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+    >
+      <Card className="w-full max-w-4xl h-[80vh] flex flex-col">
+        <CardHeader className="flex-shrink-0 border-b">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {!showConversations && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowConversations(true)}
+                  className="md:hidden"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </Button>
+              )}
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src="/placeholder-user.jpg" />
+                    <AvatarFallback>
+                      {currentConversation ? 'U' : 'C'}
+                    </AvatarFallback>
+                  </Avatar>
+                  {isConnected && (
+                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-semibold">
+                    {currentConversation ? 'Chat' : 'Messages'}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {isConnected ? 'Online' : 'Connecting...'}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-foreground">Sarah Chen</h3>
-              <p className="text-sm text-muted-foreground">Senior UX Designer • Online</p>
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm">
+                <Search className="w-4 h-4" />
+              </Button>
               <Button variant="ghost" size="sm">
                 <Phone className="w-4 h-4" />
               </Button>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button variant="ghost" size="sm">
                 <Video className="w-4 h-4" />
               </Button>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={onClose}>
                 <MoreVertical className="w-4 h-4" />
               </Button>
-            </motion.div>
-          </div>
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message, index) => (
-          <motion.div
-            key={message.id}
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
-            className={`flex ${message.sender === "me" ? "justify-end" : "justify-start"} new-message`}
-          >
-            <div className={`flex gap-2 max-w-xs lg:max-w-md ${message.sender === "me" ? "flex-row-reverse" : ""}`}>
-              {message.sender === "other" && (
-                <Avatar className="w-8 h-8">
-                  <AvatarImage src="/professional-woman-diverse.png" />
-                  <AvatarFallback>SC</AvatarFallback>
-                </Avatar>
-              )}
-
-              <div
-                className={`rounded-lg px-4 py-2 ${
-                  message.sender === "me" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                }`}
-              >
-                <p className="text-sm">{message.content}</p>
-                <p
-                  className={`text-xs mt-1 ${message.sender === "me" ? "text-primary-foreground/70" : "text-muted-foreground/70"}`}
-                >
-                  {message.timestamp}
-                </p>
-              </div>
             </div>
-          </motion.div>
-        ))}
-
-        <AnimatePresence>{isTyping && <TypingIndicator />}</AnimatePresence>
-
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Message Input */}
-      <div className="p-4 border-t border-border bg-card">
-        <div className="flex gap-2">
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button variant="ghost" size="sm">
-              <Paperclip className="w-4 h-4" />
-            </Button>
-          </motion.div>
-
-          <div className="flex-1 relative">
-            <Input
-              ref={inputRef}
-              placeholder="Type a message..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-              className="pr-10"
-            />
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <Smile className="w-4 h-4" />
-            </motion.button>
           </div>
+        </CardHeader>
 
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
-              <Send className="w-4 h-4" />
-            </Button>
-          </motion.div>
+        <div className="flex flex-1 overflow-hidden">
+          {/* Conversations List */}
+          <AnimatePresence>
+            {showConversations && (
+              <motion.div
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: 300, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                className="border-r bg-muted/20 flex-shrink-0"
+              >
+                <div className="p-4">
+                  <h4 className="font-semibold mb-4">Conversations</h4>
+                  <ScrollArea className="h-[calc(80vh-120px)]">
+                    <div className="space-y-2">
+                      {conversations.map((conversation) => (
+                        <div
+                          key={conversation.id}
+                          onClick={() => {
+                            selectConversation(conversation.id)
+                            setShowConversations(false)
+                          }}
+                          className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                            currentConversation?.id === conversation.id
+                              ? 'bg-primary/10 border border-primary/20'
+                              : 'hover:bg-muted/50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-10 h-10">
+                              <AvatarImage src="/placeholder-user.jpg" />
+                              <AvatarFallback>U</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <p className="font-medium truncate">User</p>
+                                <span className="text-xs text-muted-foreground">
+                                  {formatMessageTime(conversation.updatedAt)}
+                                </span>
+                              </div>
+                              <p className="text-sm text-muted-foreground truncate">
+                                {conversation.lastMessage?.content || 'No messages yet'}
+                              </p>
+                            </div>
+                            {conversation.unreadCount > 0 && (
+                              <Badge variant="destructive" className="text-xs">
+                                {conversation.unreadCount}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Chat Area */}
+          <div className="flex-1 flex flex-col">
+            {currentConversation ? (
+              <>
+                {/* Messages */}
+                <ScrollArea className="flex-1 p-4">
+                  <div className="space-y-4">
+                    {messages.map((message) => (
+                      <motion.div
+                        key={message.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div className={`flex gap-2 max-w-[70%] ${message.senderId === user?.id ? 'flex-row-reverse' : 'flex-row'}`}>
+                          <Avatar className="w-8 h-8 flex-shrink-0">
+                            <AvatarImage src="/placeholder-user.jpg" />
+                            <AvatarFallback>U</AvatarFallback>
+                          </Avatar>
+                          <div className={`rounded-lg px-3 py-2 ${
+                            message.senderId === user?.id
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted'
+                          }`}>
+                            <p className="text-sm">{message.content}</p>
+                            <p className={`text-xs mt-1 ${
+                              message.senderId === user?.id
+                                ? 'text-primary-foreground/70'
+                                : 'text-muted-foreground'
+                            }`}>
+                              {formatMessageTime(message.timestamp)}
+                            </p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </div>
+                </ScrollArea>
+
+                {/* Message Input */}
+                <div className="border-t p-4">
+                  <div className="flex gap-2">
+                    <Button variant="ghost" size="sm">
+                      <Paperclip className="w-4 h-4" />
+                    </Button>
+                    <Input
+                      value={messageInput}
+                      onChange={(e) => setMessageInput(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Type a message..."
+                      className="flex-1"
+                    />
+                    <Button variant="ghost" size="sm">
+                      <Smile className="w-4 h-4" />
+                    </Button>
+                    <Button onClick={handleSendMessage} disabled={!messageInput.trim()}>
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Send className="w-8 h-8" />
+                  </div>
+                  <p>Select a conversation to start chatting</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </div>
+      </Card>
+    </motion.div>
   )
 }
